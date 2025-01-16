@@ -12,6 +12,3 @@ if (rex::isBackend() && rex::getUser()) {
         }
     }
 }
-
-// Klasse für YFORM registrieren - hier war der Fehler
-rex_yform_manager::addField('value', 'gridblock', 'YForm_Gridblock_Value');
