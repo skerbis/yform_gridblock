@@ -47,34 +47,44 @@ class rex_yform_value_gridblock extends rex_yform_value_abstract
     }
     
     function saveValue()
-    {
-        // Alle wichtigen Gridblock-Werte sammeln
-        $values = [];
-        
-        // Template und Optionen
-        if (isset($_POST['REX_INPUT_VALUE'][17])) {
-            $values[17] = $_POST['REX_INPUT_VALUE'][17];
-        }
-        if (isset($_POST['REX_INPUT_VALUE'][18])) {
-            $values[18] = $_POST['REX_INPUT_VALUE'][18];
-        }
-        if (isset($_POST['REX_INPUT_VALUE'][19])) {
-            $values[19] = $_POST['REX_INPUT_VALUE'][19];
-        }
-        if (isset($_POST['REX_INPUT_VALUE'][20])) {
-            $values[20] = $_POST['REX_INPUT_VALUE'][20];
-        }
-
-        // Spalteninhalte 1-16
-        for ($i = 1; $i <= 16; $i++) {
-            if (isset($_POST['REX_INPUT_VALUE'][$i])) {
-                $values[$i] = $_POST['REX_INPUT_VALUE'][$i];
-            }
-        }
-        
-        // Als JSON speichern
-        $this->setValue(json_encode($values));
+{
+    // Prüfen ob Daten vorhanden sind
+    if (!isset($_POST['REX_INPUT_VALUE']) || !is_array($_POST['REX_INPUT_VALUE'])) {
+        $this->setValue('');
+        return;
     }
+
+    // Alle wichtigen Gridblock-Werte sammeln
+    $values = [];
+        
+    // Template und Optionen
+    if (isset($_POST['REX_INPUT_VALUE'][17])) {
+        $values[17] = $_POST['REX_INPUT_VALUE'][17];
+    }
+    if (isset($_POST['REX_INPUT_VALUE'][18])) {
+        $values[18] = $_POST['REX_INPUT_VALUE'][18];
+    }
+    if (isset($_POST['REX_INPUT_VALUE'][19])) {
+        $values[19] = $_POST['REX_INPUT_VALUE'][19];
+    }
+    if (isset($_POST['REX_INPUT_VALUE'][20])) {
+        $values[20] = $_POST['REX_INPUT_VALUE'][20];
+    }
+
+    // Spalteninhalte 1-16
+    for ($i = 1; $i <= 16; $i++) {
+        if (isset($_POST['REX_INPUT_VALUE'][$i])) {
+            $values[$i] = $_POST['REX_INPUT_VALUE'][$i];
+        }
+    }
+        
+    // Nur speichern wenn Werte vorhanden sind
+    if (!empty($values)) {
+        $this->setValue(json_encode($values));
+    } else {
+        $this->setValue('');
+    }
+}
     
     // Frontend Ausgabe generieren
     public function getGridblockOutput() 
