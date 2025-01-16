@@ -6,16 +6,13 @@ class rex_yform_value_gridblock extends rex_yform_value_abstract
     
     function init()
     {
-        // Nur Gridblock initialisieren
         $this->grid = new rex_gridblock();
     }
 
     function enterObject()
     {
-        // ID ist hier verfügbar
         $this->sliceId = 'yform_gb_field_' . $this->getId();
         
-        // Session Vars setzen
         $_SESSION['gridRexVars'] = [
             'sliceID' => $this->sliceId,
             'artID' => rex_article::getCurrentId(),
@@ -25,33 +22,19 @@ class rex_yform_value_gridblock extends rex_yform_value_abstract
             'moduleID' => 0
         ];
 
-        // Existierende Werte laden
         $value = $this->getValue();
-        
-        // JSON Werte verarbeiten
         if ($value) {
-            $values = json_decode($value, true);
-            
-            // Gridblock Values setzen
-            foreach($values as $key => $val) {
-                $this->grid->values[$key] = $val;  
-            }
+            $this->grid->values = json_decode($value, true);
         }
-        
-        // Erlaubte Templates filtern
+
         $allowedTemplates = $this->getElement('templates');
         if($allowedTemplates) {
-            // Template IDs in Array konvertieren
             $templateIds = array_map('trim', explode(',', $allowedTemplates));
-            
-            // Templates in Session speichern für Gridblock
             $_SESSION['gridTemplates'] = $templateIds;
         }
 
-        // Gridblock Formular generieren
         $input = $this->grid->getModuleInput();
         
-        // In YFORM integrieren
         $this->params['form_output'][$this->getId()] = $this->parse(
             ['value.gridblock.tpl.php', 'value.defaultform.tpl.php'],
             [
@@ -65,11 +48,27 @@ class rex_yform_value_gridblock extends rex_yform_value_abstract
     
     function saveValue()
     {
-        // Werte aus POST sammeln
+        // Alle wichtigen Gridblock-Werte sammeln
         $values = [];
-        foreach($_POST as $key => $value) {
-            if(strpos($key, 'REX_INPUT_VALUE') === 0) {
-                $values[$key] = $value;
+        
+        // Template und Optionen
+        if (isset($_POST['REX_INPUT_VALUE'][17])) {
+            $values[17] = $_POST['REX_INPUT_VALUE'][17];
+        }
+        if (isset($_POST['REX_INPUT_VALUE'][18])) {
+            $values[18] = $_POST['REX_INPUT_VALUE'][18];
+        }
+        if (isset($_POST['REX_INPUT_VALUE'][19])) {
+            $values[19] = $_POST['REX_INPUT_VALUE'][19];
+        }
+        if (isset($_POST['REX_INPUT_VALUE'][20])) {
+            $values[20] = $_POST['REX_INPUT_VALUE'][20];
+        }
+
+        // Spalteninhalte 1-16
+        for ($i = 1; $i <= 16; $i++) {
+            if (isset($_POST['REX_INPUT_VALUE'][$i])) {
+                $values[$i] = $_POST['REX_INPUT_VALUE'][$i];
             }
         }
         
