@@ -1,17 +1,18 @@
-
 <?php
 class rex_yform_value_gridblock extends rex_yform_value_abstract
 {
     private $grid;
     private $sliceId;
-    
+
     function init()
     {
+        exit('init wurde aufgerufen'); // Check if init is called
         $this->grid = new rex_gridblock();
     }
 
     function enterObject()
     {
+        exit('enterObject wurde aufgerufen'); // Check if enterObject is called
         $this->sliceId = 'yform_gb_field_' . $this->getId();
         
         $_SESSION['gridRexVars'] = [
@@ -45,14 +46,18 @@ class rex_yform_value_gridblock extends rex_yform_value_abstract
                 'error' => $this->params['warning_messages'][$this->getId()]
             ]
         );
+
+        // Erstelle das versteckte Formularfeld
+        $this->params['form_output'][$this->getId()] .= '<input type="hidden" name="' . $this->getFieldName() . '" value="' . rex_escape($this->getValue()) . '" />';
     }
     
     function saveValue()
     {
+        exit('saveValue wurde aufgerufen'); // Check if saveValue is called
         echo '<pre>';
         var_dump($_POST);
         echo '</pre>';
-       exit;
+        
         // error_log(print_r($_POST, true), 3, rex_path::log('gridblock.log'));
 
         //Sicherstellen, dass $_POST['REX_INPUT_VALUE'] existiert und ein Array ist
@@ -79,47 +84,72 @@ class rex_yform_value_gridblock extends rex_yform_value_abstract
             $this->setValue('');
         }
     }
-    
+
     private function sanitizeValue($value) {
         if (is_array($value)) {
-           return array_map([$this, 'sanitizeValue'], $value);
+          return array_map([$this, 'sanitizeValue'], $value);
         }
         
         return htmlspecialchars(trim($value)); // Standard htmlspecialchars und trim
     }
     
+        
+   function saveMedia()
+   {
+       if (!isset($_POST['REX_INPUT_VALUE']) || !is_array($_POST['REX_INPUT_VALUE'])) {
+            return;
+       }
+        
+        $mediaValues = [];
+        foreach ($_POST['REX_INPUT_VALUE'] as $key => $value) {
+            if (is_int($key)) {
+                 if (is_array($value)) {
+                      foreach($value as $subKey => $subValue) {
+                            if (strpos($subKey, 'MEDIA') !== false && is_numeric($subValue)) {
+                                $mediaValues[$key][$subKey] = $subValue;
+                            }
+                      }
+                  }
+            }
+        }
+    
+        if(!empty($mediaValues)) {
+            $this->grid->saveMediaValues($mediaValues, $this->sliceId);
+        }
+   }
+
     // Frontend Ausgabe generieren
     public function getGridblockOutput() 
     {
         if($this->getValue()) {
-            $this->grid->getSliceValues($this->sliceId);
+           $this->grid->getSliceValues($this->sliceId);
             return $this->grid->getModuleOutput();
-        }
+       }
         return '';
-    }
+   }
 
-    function getDefinitions(): array 
-    {
+   function getDefinitions(): array 
+   {
         return [
             'type' => 'value',
-            'name' => 'gridblock',
-            'values' => [
+           'name' => 'gridblock',
+           'values' => [
                 'name'  => ['type' => 'name', 'label' => rex_i18n::msg('yform_values_defaults_name')],
-                'label' => ['type' => 'text', 'label' => rex_i18n::msg('yform_values_defaults_label')],
-                'templates' => ['type' => 'text', 'label' => rex_i18n::msg('yform_gridblock_templates'), 'notice' => 'Template IDs (comma separated)'],
-            ],
-            'description' => rex_i18n::msg('yform_values_gridblock_description'),
-            'db_type' => ['text', 'mediumtext'],
-            'multi_edit' => false,
+               'label' => ['type' => 'text', 'label' => rex_i18n::msg('yform_values_defaults_label')],
+               'templates' => ['type' => 'text', 'label' => rex_i18n::msg('yform_gridblock_templates'), 'notice' => 'Template IDs (comma separated)'],
+           ],
+           'description' => rex_i18n::msg('yform_values_gridblock_description'),
+           'db_type' => ['text', 'mediumtext'],
+           'multi_edit' => false,
         ];
-    }
+   }
 
-    public static function getSearchField($params)
+   public static function getSearchField($params)
     {
         $params['searchForm']->setValueField('text', ['name' => $params['field']->getName(), 'label' => $params['field']->getLabel()]);
     }
 
-    public static function getSearchFilter($params)
+   public static function getSearchFilter($params)
     {
         $sql = rex_sql::factory();
         $value = $params['value'];
@@ -127,7 +157,7 @@ class rex_yform_value_gridblock extends rex_yform_value_abstract
 
         if ($value == '(empty)') {
             return ' (' . $sql->escapeIdentifier($field) . ' = "" or ' . $sql->escapeIdentifier($field) . ' IS NULL) ';
-        }
+       }
         if ($value == '!(empty)') {
             return ' (' . $sql->escapeIdentifier($field) . ' <> "" and ' . $sql->escapeIdentifier($field) . ' IS NOT NULL) ';
         }
