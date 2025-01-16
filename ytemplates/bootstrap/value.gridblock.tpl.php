@@ -19,10 +19,8 @@ if (!empty($this->getWarningClass())) {
     <label class="control-label" for="<?php echo $this->getFieldId() ?>">
         <?php echo $this->getLabel() ?>
     </label>
-    
-    <div class="yform-gridblock-wrapper">
-        <?php echo $value; ?>
-    </div>
+
+    <?php echo $value; ?>
     
     <?php if (!empty($notice)) : ?>
         <p class="help-block small"><?php echo implode('<br />', $notice) ?></p>
