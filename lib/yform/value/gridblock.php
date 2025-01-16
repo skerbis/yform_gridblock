@@ -46,9 +46,14 @@ class rex_yform_value_gridblock extends rex_yform_value_abstract
         );
     }
     
-    function saveValue()
+ function saveValue()
 {
-    dump($_POST);
+    if (empty($_POST)) {
+        error_log('$_POST is empty');
+    } else {
+        error_log('$_POST contains data');
+    }
+
     // Prüfen ob Daten vorhanden sind
     if (!isset($_POST['REX_INPUT_VALUE']) || !is_array($_POST['REX_INPUT_VALUE'])) {
         $this->setValue('');
