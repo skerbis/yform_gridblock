@@ -1,8 +1,18 @@
-package: addon_key
-version: '0.0.0'
-author: 'Friends Of REDAXO'
-supportpage: https://github.com/FriendsOfREDAXO/addon_key
+package: yform_gridblock 
+version: '1.0.0'
+author: YourName
+supportpage: https://github.com/yourgithub/yform_gridblock
+
+page:
+    title: 'YForm Gridblock'
+    perm: admin
+    subpages:
+        settings: { title: 'Settings' }
+
 requires:
-    redaxo: '^5.15.1'
+    redaxo: '^5.12.0'
     php:
-        version: '>=8.1, <9'
+        version: '>=7.3'
+    packages:
+        yform: '^4.0.0'
+        gridblock: '^1.0.0'
