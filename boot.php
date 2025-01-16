@@ -1,6 +1,6 @@
 <?php
 if (rex::isBackend() && rex::getUser()) {
-    // Template-Pfad für YFORM registrieren
+    // Template-Pfad für YFORM registrieren  
     rex_yform::addTemplatePath($this->getPath('ytemplates'));
 
     // Nur die Gridblock CSS Datei einbinden, wenn wir im YFORM Edit sind
@@ -13,5 +13,5 @@ if (rex::isBackend() && rex::getUser()) {
     }
 }
 
-// Klasse für YFORM registrieren  
-rex_yform::addValueField('gridblock', 'YForm_Gridblock_Value');
+// Klasse für YFORM registrieren - hier war der Fehler
+rex_yform_manager::addField('value', 'gridblock', 'YForm_Gridblock_Value');
