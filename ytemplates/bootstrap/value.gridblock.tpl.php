@@ -1,4 +1,6 @@
 <?php
+// ytemplates/bootstrap/value.gridblock.tpl.php
+
 $notice = [];
 if ($this->getElement('notice') != "") {
     $notice[] = rex_i18n::translate($this->getElement('notice'), false);
@@ -33,3 +35,24 @@ if (!empty($this->getWarningClass())) {
         <p class="help-block small"><?php echo implode('<br />', $notice) ?></p>
     <?php endif; ?>
 </div>
+
+<script>
+// Form Submit abfangen und Daten übertragen
+$(document).ready(function() {
+    var form = $('#<?php echo $this->getFieldId() ?>').closest('form');
+    var hiddenInput = $('#<?php echo $this->getFieldId() ?>');
+    
+    form.on('submit', function() {
+        var gridData = {};
+        
+        // Template und Optionen
+        $('input[name^="REX_INPUT_VALUE"]').each(function() {
+            var name = $(this).attr('name').match(/\[(\d+)\]/)[1];
+            gridData[name] = $(this).val();
+        });
+        
+        // Als JSON im hidden field speichern
+        hiddenInput.val(JSON.stringify(gridData));
+    });
+});
+</script>
