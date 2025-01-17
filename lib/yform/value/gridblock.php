@@ -72,6 +72,50 @@ class rex_yform_value_gridblock extends rex_yform_value_abstract
             $this->setValue(json_encode($values));
         }
     }
+    
+    public function getGridblockOutput() 
+    {
+        if($this->getValue()) {
+            $this->grid->getSliceValues($this->sliceId);
+            return $this->grid->getModuleOutput();
+        }
+        return '';
+    }
 
-    // ... Rest der Klasse bleibt gleich
+    function getDefinitions(): array 
+    {
+        return [
+            'type' => 'value',
+            'name' => 'gridblock',
+            'values' => [
+                'name'  => ['type' => 'name', 'label' => rex_i18n::msg('yform_values_defaults_name')],
+                'label' => ['type' => 'text', 'label' => rex_i18n::msg('yform_values_defaults_label')],
+                'templates' => ['type' => 'text', 'label' => rex_i18n::msg('yform_gridblock_templates'), 'notice' => 'Template IDs (comma separated)'],
+            ],
+            'description' => rex_i18n::msg('yform_values_gridblock_description'),
+            'db_type' => ['text', 'mediumtext'], 
+            'multi_edit' => false,
+        ];
+    }
+
+    public static function getSearchField($params)
+    {
+        $params['searchForm']->setValueField('text', ['name' => $params['field']->getName(), 'label' => $params['field']->getLabel()]);
+    }
+
+    public static function getSearchFilter($params)
+    {
+        $sql = rex_sql::factory();
+        $value = $params['value'];
+        $field = $params['field']->getName();
+
+        if ($value == '(empty)') {
+            return ' (' . $sql->escapeIdentifier($field) . ' = "" or ' . $sql->escapeIdentifier($field) . ' IS NULL) ';
+        }
+        if ($value == '!(empty)') {
+            return ' (' . $sql->escapeIdentifier($field) . ' <> "" and ' . $sql->escapeIdentifier($field) . ' IS NOT NULL) ';
+        }
+
+        return $sql->escapeIdentifier($field) . ' LIKE ' . $sql->escape('%' . $value . '%');
+    }
 }
