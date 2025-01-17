@@ -1,4 +1,6 @@
 <?php
+// ytemplates/bootstrap/value.gridblock.tpl.php
+
 $notice = [];
 if ($this->getElement('notice') != "") {
     $notice[] = rex_i18n::translate($this->getElement('notice'), false);
@@ -19,8 +21,15 @@ if (!empty($this->getWarningClass())) {
     <label class="control-label" for="<?php echo $this->getFieldId() ?>">
         <?php echo $this->getLabel() ?>
     </label>
+    
+    <?php 
+    // Wichtig: Das versteckte Feld für die Daten
+    echo '<input type="hidden" name="'.$this->getFieldName().'" id="'.$this->getFieldId().'" value="'.htmlspecialchars($this->getValue()).'" />';
+    ?>
 
-    <?php echo $value; ?>
+    <div class="yform-gridblock-wrapper">
+        <?php echo $value; ?>
+    </div>
     
     <?php if (!empty($notice)) : ?>
         <p class="help-block small"><?php echo implode('<br />', $notice) ?></p>
