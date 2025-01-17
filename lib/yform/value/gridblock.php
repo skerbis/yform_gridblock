@@ -11,50 +11,50 @@ class rex_yform_value_gridblock extends rex_yform_value_abstract
 
     function enterObject()
     {
-        $this->sliceId = 'yform_gb_field_' . $this->getId();
-        
-        $_SESSION['gridRexVars'] = [
-            'sliceID' => $this->sliceId,
-            'artID' => rex_article::getCurrentId(),
-            'tmplID' => rex_template::getDefaultId(),
-            'clangID' => rex_clang::getCurrentId(),
-            'ctypeID' => 1,
-            'moduleID' => 0
-        ];
+    $this->sliceId = 'yform_gb_field_' . $this->getId();
+    
+    $_SESSION['gridRexVars'] = [
+        'sliceID' => $this->sliceId,
+        'artID' => rex_article::getCurrentId(),
+        'tmplID' => rex_template::getDefaultId(),
+        'clangID' => rex_clang::getCurrentId(),
+        'ctypeID' => 1,
+        'moduleID' => 0
+    ];
 
-        // Existierende Werte laden
-        $value = $this->getValue();
-        if ($value) {
-            $values = json_decode($value, true);
-            if(is_array($values)) {
-                // Werte direkt in REX_INPUT_VALUE speichern
-                foreach($values as $key => $val) {
-                    $_REQUEST['REX_INPUT_VALUE'][$key] = $val;
-                }
-            }
+    // Gridblock mit leeren Werten initialisieren
+    $_REQUEST['REX_INPUT_VALUE'] = [];
+
+    // Existierende Werte laden
+    $value = $this->getValue();
+    if ($value && $value != '') {
+        $values = json_decode($value, true);
+        if (is_array($values)) {
+            $_REQUEST['REX_INPUT_VALUE'] = $values;
         }
-
-        // Template-Filter
-        $allowedTemplates = $this->getElement('templates');
-        if($allowedTemplates) {
-            $templateIds = array_map('trim', explode(',', $allowedTemplates));
-            $_SESSION['gridTemplates'] = $templateIds;
-        }
-
-        // Gridblock Formular generieren
-        $input = $this->grid->getModuleInput();
-        
-        // In YFORM integrieren
-        $this->params['form_output'][$this->getId()] = $this->parse(
-            ['value.gridblock.tpl.php', 'value.defaultform.tpl.php'],
-            [
-                'type' => $this->getElement('type'),
-                'name' => $this->getElement('name'), 
-                'value' => $input,
-                'error' => $this->params['warning_messages'][$this->getId()]
-            ]
-        );
     }
+
+    // Template-Filter
+    $allowedTemplates = $this->getElement('templates');
+    if($allowedTemplates) {
+        $templateIds = array_map('trim', explode(',', $allowedTemplates));
+        $_SESSION['gridTemplates'] = $templateIds;
+    }
+
+    // Gridblock Formular generieren
+    $input = $this->grid->getModuleInput();
+    
+    // In YFORM integrieren
+    $this->params['form_output'][$this->getId()] = $this->parse(
+        ['value.gridblock.tpl.php', 'value.defaultform.tpl.php'],
+        [
+            'type' => $this->getElement('type'),
+            'name' => $this->getElement('name'), 
+            'value' => $input,
+            'error' => $this->params['warning_messages'][$this->getId()]
+        ]
+    );
+   }
     
     function saveValue()
     {
