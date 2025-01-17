@@ -3,6 +3,7 @@ class rex_yform_value_gridblock extends rex_yform_value_abstract
 {
     private $grid;
     private $sliceId;
+    public $values;
     
     function init()
     {
