@@ -3,7 +3,7 @@ class rex_yform_value_gridblock extends rex_yform_value_abstract
 {
     private $grid;
     private $sliceId;
-
+    
     function init()
     {
         $this->grid = new rex_gridblock();
@@ -22,9 +22,13 @@ class rex_yform_value_gridblock extends rex_yform_value_abstract
             'moduleID' => 0
         ];
 
+        // Existierende Werte aus dem versteckten Feld laden
         $value = $this->getValue();
         if ($value) {
-            $this->grid->values = json_decode($value, true);
+            $values = json_decode($value, true);
+            if (is_array($values)) {
+                $this->grid->values = $values;
+            }
         }
 
         $allowedTemplates = $this->getElement('templates');
@@ -44,94 +48,56 @@ class rex_yform_value_gridblock extends rex_yform_value_abstract
                 'error' => $this->params['warning_messages'][$this->getId()]
             ]
         );
-
-        // Erstelle das versteckte Formularfeld
-        $this->params['form_output'][$this->getId()] .= '<input type="hidden" name="' . $this->getFieldName() . '" value="' . rex_escape($this->getValue()) . '" />';
     }
     
     function saveValue()
     {
-        //Sicherstellen, dass $_POST['REX_INPUT_VALUE'] existiert und ein Array ist
-        if (!isset($_POST['REX_INPUT_VALUE']) || !is_array($_POST['REX_INPUT_VALUE'])) {
-            $this->setValue('');
-            return;
-        }
-
+        // Werte aus dem POST Array sammeln
         $values = [];
-        
-        // Gehe alle geposteten Werte durch und filtere relevante
-        foreach ($_POST['REX_INPUT_VALUE'] as $key => $value) {
-            // Stelle sicher, dass der Schlüssel ein Integer ist
-            if (is_int($key)) {
-                // Verarbeite jeden Wert einzeln
-                $values[$key] = $this->sanitizeValue($value);
+        $post = rex_post('REX_INPUT_VALUE', 'array', []);
+
+        if (!empty($post)) {
+            // Template und Optionen
+            foreach ([17, 18, 19, 20] as $key) {
+                if (isset($post[$key])) {
+                    $values[$key] = $post[$key];
+                }
             }
-        }
 
-        // Speichern nur wenn Werte vorhanden sind
-        if (!empty($values)) {
-           $this->setValue(json_encode($values));
-        } else {
-            $this->setValue('');
-        }
-    }
-
-    private function sanitizeValue($value) {
-        if (is_array($value)) {
-           return array_map([$this, 'sanitizeValue'], $value);
-        }
-        
-        return htmlspecialchars(trim($value));
-    }
-    
-        
-   function saveMedia()
-   {
-        if (!isset($_POST['REX_INPUT_VALUE']) || !is_array($_POST['REX_INPUT_VALUE'])) {
-            return;
-        }
-        
-        $mediaValues = [];
-        foreach ($_POST['REX_INPUT_VALUE'] as $key => $value) {
-            if (is_int($key)) {
-                if (is_array($value)) {
-                    foreach($value as $subKey => $subValue) {
-                        if (strpos($subKey, 'MEDIA') !== false && is_numeric($subValue)) {
-                            $mediaValues[$key][$subKey] = $subValue;
-                        }
-                    }
+            // Spalteninhalte 1-16  
+            for ($i = 1; $i <= 16; $i++) {
+                if (isset($post[$i])) {
+                    $values[$i] = $post[$i];
                 }
             }
         }
-    
-        if(!empty($mediaValues)) {
-            $this->grid->saveMediaValues($mediaValues, $this->sliceId);
-        }
-   }
 
-    // Frontend Ausgabe generieren
+        // Als JSON im versteckten Feld speichern
+        $this->setValue(!empty($values) ? json_encode($values) : '');
+    }
+    
     public function getGridblockOutput() 
     {
         if($this->getValue()) {
-            $this->grid->getSliceValues($this->sliceId);
-           return $this->grid->getModuleOutput();
+            $this->grid->values = json_decode($this->getValue(), true);
+            return $this->grid->getModuleOutput();
         }
         return '';
-   }
+    }
 
     function getDefinitions(): array 
     {
         return [
             'type' => 'value',
             'name' => 'gridblock',
-           'values' => [
+            'values' => [
                 'name'  => ['type' => 'name', 'label' => rex_i18n::msg('yform_values_defaults_name')],
                 'label' => ['type' => 'text', 'label' => rex_i18n::msg('yform_values_defaults_label')],
                 'templates' => ['type' => 'text', 'label' => rex_i18n::msg('yform_gridblock_templates'), 'notice' => 'Template IDs (comma separated)'],
             ],
             'description' => rex_i18n::msg('yform_values_gridblock_description'),
-           'db_type' => ['text', 'mediumtext'],
-           'multi_edit' => false,
+            'db_type' => ['text', 'mediumtext'], 
+            'multi_edit' => false,
         ];
     }
 
@@ -150,9 +116,9 @@ class rex_yform_value_gridblock extends rex_yform_value_abstract
             return ' (' . $sql->escapeIdentifier($field) . ' = "" or ' . $sql->escapeIdentifier($field) . ' IS NULL) ';
         }
         if ($value == '!(empty)') {
-           return ' (' . $sql->escapeIdentifier($field) . ' <> "" and ' . $sql->escapeIdentifier($field) . ' IS NOT NULL) ';
+            return ' (' . $sql->escapeIdentifier($field) . ' <> "" and ' . $sql->escapeIdentifier($field) . ' IS NOT NULL) ';
         }
 
-       return $sql->escapeIdentifier($field) . ' LIKE ' . $sql->escape('%' . $value . '%');
+        return $sql->escapeIdentifier($field) . ' LIKE ' . $sql->escape('%' . $value . '%');
     }
 }
