@@ -3,7 +3,6 @@ class rex_yform_value_gridblock extends rex_yform_value_abstract
 {
     private $grid;
     private $sliceId;
-    public $values;
     
     function init()
     {
@@ -28,7 +27,8 @@ class rex_yform_value_gridblock extends rex_yform_value_abstract
         if ($value) {
             $values = json_decode($value, true);
             if (is_array($values)) {
-                $this->grid->values = $values;
+                // Statt direktem Values-Zugriff getSliceValues() nutzen 
+                $this->grid->getSliceValues($this->sliceId);
             }
         }
 
@@ -80,7 +80,7 @@ class rex_yform_value_gridblock extends rex_yform_value_abstract
     public function getGridblockOutput() 
     {
         if($this->getValue()) {
-            $this->grid->values = json_decode($this->getValue(), true);
+            $this->grid->getSliceValues($this->sliceId);
             return $this->grid->getModuleOutput();
         }
         return '';
