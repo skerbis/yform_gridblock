@@ -25,7 +25,13 @@ class rex_yform_value_gridblock extends rex_yform_value_abstract
         // Existierende Werte laden
         $value = $this->getValue();
         if ($value) {
-            $this->grid->getSliceValues($this->sliceId);
+            $values = json_decode($value, true);
+            if(is_array($values)) {
+                // Werte direkt in REX_INPUT_VALUE speichern
+                foreach($values as $key => $val) {
+                    $_REQUEST['REX_INPUT_VALUE'][$key] = $val;
+                }
+            }
         }
 
         // Template-Filter
@@ -55,28 +61,26 @@ class rex_yform_value_gridblock extends rex_yform_value_abstract
         // Alle REX_INPUT_VALUE Felder aus dem POST sammeln
         $values = [];
 
-        foreach($_POST as $key => $value) {
-            // Filtere die REX_INPUT_VALUE Felder
-            if (preg_match('/^REX_INPUT_VALUE/', $key)) {
-                // Extrahiere die ID
-                preg_match('/\[(\d+)\]/', $key, $matches);
-                if (isset($matches[1])) {
-                    $id = $matches[1];
-                    $values[$id] = $value;
-                }
+        if (isset($_POST['REX_INPUT_VALUE']) && is_array($_POST['REX_INPUT_VALUE'])) {
+            $values = $_POST['REX_INPUT_VALUE'];
+            
+            // Als JSON speichern wenn Daten vorhanden sind
+            if (!empty($values)) {
+                $this->setValue(json_encode($values));
             }
-        }
-
-        // Als JSON speichern wenn Daten vorhanden sind
-        if (!empty($values)) {
-            $this->setValue(json_encode($values));
         }
     }
     
     public function getGridblockOutput() 
     {
         if($this->getValue()) {
-            $this->grid->getSliceValues($this->sliceId);
+            $values = json_decode($this->getValue(), true);
+            if(is_array($values)) {
+                // Werte direkt in REX_INPUT_VALUE speichern
+                foreach($values as $key => $val) {
+                    $_REQUEST['REX_INPUT_VALUE'][$key] = $val;
+                }
+            }
             return $this->grid->getModuleOutput();
         }
         return '';
