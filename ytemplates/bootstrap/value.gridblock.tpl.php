@@ -15,6 +15,8 @@ $class_group['form-group'] = 'form-group';
 if (!empty($this->getWarningClass())) {
     $class_group[] = $this->getWarningClass();
 }
+
+$formId = $this->getId();
 ?>
 
 <div class="<?php echo implode(' ', $class_group) ?>" id="<?php echo $this->getHTMLId() ?>">
@@ -27,7 +29,7 @@ if (!empty($this->getWarningClass())) {
     echo '<input type="hidden" name="' . $this->getFieldName() . '" id="' . $this->getFieldId() . '" value="' . htmlspecialchars($this->getValue()) . '" />';
     ?>
 
-    <div class="yform-gridblock-wrapper">
+    <div class="yform-gridblock-wrapper" id="yform-gridblock-<?php echo $formId; ?>">
         <?php echo $value; ?>
     </div>
     
@@ -37,22 +39,37 @@ if (!empty($this->getWarningClass())) {
 </div>
 
 <script>
-// Form Submit abfangen und Daten übertragen
-$(document).ready(function() {
-    var form = $('#<?php echo $this->getFieldId() ?>').closest('form');
-    var hiddenInput = $('#<?php echo $this->getFieldId() ?>');
-    
-    form.on('submit', function() {
+jQuery(document).ready(function($) {
+    var $form = $('#<?php echo $this->getFieldId(); ?>').closest('form');
+    var $hiddenInput = $('#<?php echo $this->getFieldId(); ?>');
+    var $wrapper = $('#yform-gridblock-<?php echo $formId; ?>');
+
+    $form.on('submit', function(e) {
+        // Alle REX_INPUT_VALUE Felder sammeln
         var gridData = {};
         
-        // Template und Optionen
-        $('input[name^="REX_INPUT_VALUE"]').each(function() {
-            var name = $(this).attr('name').match(/\[(\d+)\]/)[1];
-            gridData[name] = $(this).val();
+        // Template und Optionen (17-20)
+        $wrapper.find('input[name^="REX_INPUT_VALUE"]').each(function() {
+            var match = $(this).attr('name').match(/REX_INPUT_VALUE\[(\d+)\]/);
+            if (match) {
+                gridData[match[1]] = $(this).val();
+            }
         });
-        
-        // Als JSON im hidden field speichern
-        hiddenInput.val(JSON.stringify(gridData));
+
+        // Value Felder in den Spalten (1-16)
+        for (var i = 1; i <= 16; i++) {
+            var values = {};
+            $wrapper.find('input[name^="REX_INPUT_VALUE['+i+']"]').each(function() {
+                var name = $(this).attr('name');
+                values[name] = $(this).val();
+            });
+            if (!$.isEmptyObject(values)) {
+                gridData[i] = values;
+            }
+        }
+
+        // Als JSON speichern
+        $hiddenInput.val(JSON.stringify(gridData));
     });
 });
 </script>
