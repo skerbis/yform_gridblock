@@ -1,6 +1,4 @@
 <?php
-// ytemplates/bootstrap/value.gridblock.tpl.php
-
 $notice = [];
 if ($this->getElement('notice') != "") {
     $notice[] = rex_i18n::translate($this->getElement('notice'), false);
@@ -23,8 +21,8 @@ if (!empty($this->getWarningClass())) {
     </label>
     
     <?php 
-    // Wichtig: Das versteckte Feld für die Daten
-    echo '<input type="hidden" name="'.$this->getFieldName().'" id="'.$this->getFieldId().'" value="'.htmlspecialchars($this->getValue()).'" />';
+    // Verstecktes Feld für die JSON-Daten
+    echo '<input type="hidden" name="' . $this->getFieldName() . '" id="' . $this->getFieldId() . '" value="' . htmlspecialchars($this->getValue()) . '" />';
     ?>
 
     <div class="yform-gridblock-wrapper">
